@@ -1,4 +1,9 @@
 <?php
+	require("../../../../configuration.php");
+	require("fnc_news.php");
+
+	$latestNewsHTML = readNews(1);
+
 	$myName = "Maris Riba";
 	$fullTimeNow = date("d.m.Y H:i:s");
 	//<p> Lehe avamise hetkel oli: <strong>31.01.2020 11:32:07</strong> </p>
@@ -51,7 +56,7 @@
     }
 
 	//loen etteantud kataloogist pildifailid
-	$picsDir= "../Pics/";
+	$picsDir= "../../Pics/";
 	$photoTypesAllowed = ["image/jpeg", "image/png"];  //massiv et millised foto tüübid on lubatud
 	$photoList = [];
 	$allFiles = array_slice(scandir($picsDir), 2);		//scandir loeb kausta sisu, array_slice eemaldab ees olevad kataloogid, et tuleks puhas massiiv ainult piltidest.
@@ -103,7 +108,8 @@
 		echo $timeHTML;
 		echo $partOfDayHTML;
 		echo $semesterProgressHTML;
-        echo $randomImageHTML;
+		echo $randomImageHTML;
+		echo $latestNewsHTML;
         
 	?>
 </body>
