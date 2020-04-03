@@ -5,10 +5,10 @@ require("fnc_users.php");
 
 require("classes/Session.class.php");
 
-SessionManager::sessionStart("vr20", 0, "/~andrus.rinde/", "tigu.hk.tlu.ee");
+SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
 
-$myName = "Andrus Rinde";
+$myName = "Maris Riba";
 $fullTimeNow = date("d.m.Y H:i:s");
 //<p>Lehe avamise hetkel oli: <strong>31.01.2020 11:32:07</strong></p>
 $timeHTML = "\n <p>Lehe avamise hetkel oli: <strong>" . $fullTimeNow . "</strong></p> \n";
@@ -45,7 +45,7 @@ if ($fromSemesterStart->format("%r%a") < 0) {
 }
 
 //loen etteantud kataloogist pildifailid
-$picsDir = "../../pics/";
+$picsDir = "../../Pics/";
 $photoTypesAllowed = ["image/jpeg", "image/png"];
 $photoList = [];
 $allFiles = array_slice(scandir($picsDir), 2);

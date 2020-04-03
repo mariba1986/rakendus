@@ -5,7 +5,7 @@ require("../../../../configuration.php");
 //session_start();
 //var_dump($_SESSION);
 require("classes/Session.class.php");
-SessionManager::sessionStart("vr20", 0, "/~andrus.rinde/", "tigu.hk.tlu.ee");
+SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
 //kas pole sisseloginud
 if (!isset($_SESSION["userid"])) {
@@ -41,6 +41,7 @@ if (isset($_GET["logout"])) {
     <ul>
         <li><a href="addnews.php">Uudiste lisamise</a></li>
         <li><a href="news.php">Uudiste lugemise</a></li>
+        <li><a href="photoUpload.php">Foto laadiminine</a></li>
     </ul>
 </body>
 
