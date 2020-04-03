@@ -1,7 +1,8 @@
 <?php
 require("../../../../configuration.php");
+require("fnc_study.php")
 
-$studyOpt = getStudyTopicsOptions()
+$studyOpt = getStudyTopicsOptions();
 
 ?>
 

@@ -1,51 +1,61 @@
 <?php
 
 
-function test_input($data) {
+function test_input($data)
+{
     $data = trim($data);
     $data = stripslashes($data);
     $data = htmlspecialchars($data);
     return $data;
-}  
+}
 //sessiooni käivitamine või kasutamine
 //session_start();
 
-function signUp($name, $surname, $email, $gender, $birthDate, $password){
-	$notice = null;
-	$conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-	$stmt = $conn->prepare("INSERT INTO vr20_users (firstname, lastname, birthdate, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
-    echo $conn->error;
+function signUp($name, $surname, $email, $gender, $birthDate, $password)
+{
+    $notice = null;
+    $conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+    $stmt = $conn->prepare("SELECT id FROM vr20_users WHERE email=?");
+    if ($stmt->fetch()) {
+        $notice = "Selline kasutaja (" . $email . ") on juba olemas, vali uus või logi sisse!";
+        $stmt->close();
+        return $notice;
+    } else {
+        $stmt = $conn->prepare("INSERT INTO vr20_users (firstname, lastname, birthdate, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
+        echo $conn->error;
+    }
     // nüüd tuleks parool ära krüpteerida:
-    $options = ["cost" => 12, "salt"=> substr(sha1(rand()), 0, 22) ];  //1)näitab ära kui palju vaeva nähakse krüpteerimisega. 12 on päris palju. 2)salt - lisatakse paroolile enne krüpteerimist lisastring. Mingi kombinatsioon tähemärke mis muudab parooli keerukamaks ja räsi keerukamas.
+    $options = ["cost" => 12, "salt" => substr(sha1(rand()), 0, 22)];  //1)näitab ära kui palju vaeva nähakse krüpteerimisega. 12 on päris palju. 2)salt - lisatakse paroolile enne krüpteerimist lisastring. Mingi kombinatsioon tähemärke mis muudab parooli keerukamaks ja räsi keerukamas.
     $pwdhash = password_hash($password, PASSWORD_BCRYPT, $options);
 
-    $stmt->bind_param("sssiss", $name, $surname, $birthDate, $gender, $email, $pwdhash );  //oluline on järjekord mis on sql käsus ehk seal kus se stmt on, mitte sama järjekord mis on ülemises reas(rida 2)
-    
+    $stmt->bind_param("sssiss", $name, $surname, $birthDate, $gender, $email, $pwdhash);  //oluline on järjekord mis on sql käsus ehk seal kus se stmt on, mitte sama järjekord mis on ülemises reas(rida 2)
 
-    if($stmt->execute()){
+
+    if ($stmt->execute()) {
         $notice = "ok";
-    }   else {
+    } else {
         $notice = $stmt->error;
     }
-    
+
     $stmt->close();
-	$conn->close();
-	return $notice;
+    $conn->close();
+    return $notice;
 }
 
-function signIn($email, $password) {
+function signIn($email, $password)
+{
     $notice = null;
-	$conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+    $conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
     $stmt = $conn->prepare("SELECT id, firstname, lastname, password FROM vr20_users WHERE email=?");
     $stmt->bind_param("s", $email);
     $stmt->bind_result($idFromDB, $firstnameFromDB, $lastnameFromDB, $passwordFromDB);
     echo $conn->error;
     $stmt->execute();
-    if( $stmt->fetch()){
-        if(password_verify($password, $passwordFromDB)){
+    if ($stmt->fetch()) {
+        if (password_verify($password, $passwordFromDB)) {
             $_SESSION["userid"] = $idFromDB;
-            $_SESSION["userFirstName"] =$firstnameFromDB;
-            $_SESSION["userLastName"] =$lastnameFromDB;
+            $_SESSION["userFirstName"] = $firstnameFromDB;
+            $_SESSION["userLastName"] = $lastnameFromDB;
 
             $stmt->close();
             $conn->close();
@@ -55,12 +65,10 @@ function signIn($email, $password) {
             $notice = "vale salasõna!";
         }
     } else {
-        $notice="Śellist kasutajat(" .$email .") ei leitud!";
+        $notice = "Sellist kasutajat(" . $email . ") ei leitud!";
     }
-    
-    $stmt->close();
-	$conn->close();
-	return $notice;
 
+    $stmt->close();
+    $conn->close();
+    return $notice;
 }
- 
