@@ -107,10 +107,6 @@ if (isset($_POST["photoSubmit"])) {
         imagedestroy($myNewImage);
 
         //salvestame selle asja andmebaasi
-        
-        false
-        false
-
     } //kui vigu pole lõppeb siit
 }
 

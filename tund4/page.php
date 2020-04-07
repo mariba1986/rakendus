@@ -61,43 +61,19 @@ $photoCount = count($photoList);
 //$photoNum = mt_rand(0, $photoCount - 1);
 //$randomImageHTML = '<img src="' .$picsDir .$photoList[$photoNum] .'" alt="juhuslik pilt Haapsalust">' ."\n";
 
-$photosToShow = [];
-$photoCountLimit = 3;
-if ($photoCount < 3) {
-    $photoCountLimit = $photoCount;
-}
-for ($i = 0; $i < $photoCountLimit; $i++) {
+$photoNum = [];
+foreach ([0, 1, 2] as $element) {
     do {
-        $photoNum = mt_rand(0, ($photoCount - 1));
-    } while (in_array($photoNum, $photosToShow) == true);
-    array_push($photosToShow, $photoNum);
+        $drawNum = mt_rand(0, $photoCount - 1);
+    } while (in_array($drawNum, $photoNum)); {
+        array_push($photoNum, $drawNum); //lisab loositud numbrid massiivi
+    }
 }
 $randomImageHTML = "";
 for ($i = 0; $i < count($photosToShow); $i++) {
     $randomImageHTML .= '<img src="' . $picsDir . $photoList[$photosToShow[$i]] . '" alt="juhuslik pilt Haapsalust">' . "\n";
 }
 
-//kellaajast sõltuv värvi osa
-$bgColor = "#FFFFFF";
-$txtColor = "#000000";
-if ($hourNow > 21 or $hourNow < 7) {
-    $bgColor = "#000033";
-    $txtColor = "#FFFFEE";
-} elseif ($hourNow >= 7 and $hourNow < 12) {
-    $bgColor = "#FFFFEE";
-    $txtColor = "#000033";
-} elseif ($hourNow >= 12 and $hourNow < 18) {
-    $bgColor = "#FFFFFF";
-    $txtColor = "#000066";
-} else {
-    $bgColor = "#999999";
-    $txtColor = "#000033";
-}
-$styleHTML = "<style> \n .timeBackground { \n background-color: ";
-$styleHTML .= $bgColor;
-$styleHTML .= "; \n color: ";
-$styleHTML .= $txtColor;
-$styleHTML .= "; \n } \n </style> \n";
 
 $newsHTML = readNewsPage(1);
 
@@ -130,9 +106,6 @@ if (isset($_POST["login"])) {
 <head>
     <meta charset="utf-8">
     <title>Veebirakendused ja nende loomine 2020</title>
-    <?php
-    echo $styleHTML;
-    ?>
 </head>
 
 <body>
