@@ -7,41 +7,53 @@ require("classes/Session.class.php");
 
 SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
+//$newsHTML = readNews(1)
 
 $myName = "Maris Riba";
 $fullTimeNow = date("d.m.Y H:i:s");
 //<p>Lehe avamise hetkel oli: <strong>31.01.2020 11:32:07</strong></p>
 $timeHTML = "\n <p>Lehe avamise hetkel oli: <strong>" . $fullTimeNow . "</strong></p> \n";
 $hourNow = date("H");
-$partOfDay = "hägune aeg";
+//$partOfDay = "hägune aeg";
 
 if ($hourNow < 10) {
     $partOfDay = "hommik";
-}
-if ($hourNow >= 10 and $hourNow < 18) {
+    $backColor = '#7CBDC2';
+    $fontColor = '#407999';
+} elseif ($hourNow >= 10 and $hourNow < 18) {
     $partOfDay = "aeg aktiivselt tegutseda";
+    $backColor = '#50C30A';
+    $fontColor = '#324726';
+} else {
+    $partOfDay = "hägune aeg";
+    $backColor = '#B2A29F';
+    $fontColor = '#7C463C';
 }
 $partOfDayHTML = "<p>Käes on " . $partOfDay . "!</p> \n";
 
 //info semestri kulgemise kohta
-$semesterStart = new DateTime("2020-1-27");
-$semesterEnd = new DateTime("2020-6-22");
+$semesterStart = new DateTime("2020-01-27");
+$semesterEnd = new DateTime("2020-06-22");
 $semesterDuration = $semesterStart->diff($semesterEnd);
 //echo $semesterDuration;
-//var_dump($semesterDuration);
+//var_dump ($semesterDuration);
 $today = new DateTime("now");
 $fromSemesterStart = $semesterStart->diff($today);
-if ($fromSemesterStart->format("%r%a") < 0) {
-    $semesterProgressHTML = "<p>Semester pole veel alanud!</p> \n";
-} elseif ($fromSemesterStart->format("%r%a") <= $semesterDuration->format("%r%a")) {
-    //<p>Semester on hoos: <meter min="0" max="147" value="4"></meter>.</p>
-    $semesterProgressHTML = '<p>Semester on hoos: <meter min="0" max="';
-    $semesterProgressHTML .= $semesterDuration->format("%r%a");
-    $semesterProgressHTML .= '" value="';
-    $semesterProgressHTML .= $fromSemesterStart->format("%r%a");
-    $semesterProgressHTML .= '"></meter>.</p>' . "\n";
-} else {
-    $semesterProgressHTML = "<p>Semester on lõppenud!</p> \n";
+
+//<p> Semester on hoos: <meter.value="" min="0" max=""> </meter>.</p>
+
+$semesterProgressHTML = '<p> Semester on hoos: <meter min="0" max="';
+$semesterProgressHTML .= $semesterDuration->format("%r%a");            //kui on negatiivne, siis r on see mis paneb miinuse ette. "a" on kahe kuupäeva erinevuse päevade arv
+$semesterProgressHTML .= '"value = "';
+$semesterProgressHTML .= $fromSemesterStart->format("%r%a");
+$semesterProgressHTML .= '"></meter>.</p>' . "\n";
+
+//Väljundid kui semester ei ole veel alanud ja kui on juba lõppenud
+if ($today < $semesterStart) {
+    $semesterProgressHTML = "<p> Semester ei ole veel alanud. </p>" . "\n";
+}
+if ($today > $semesterEnd) {
+    $semesterProgressHTML = "<p> Semester on juba kahjuks lõppenud. </p>" . "\n";
 }
 
 //loen etteantud kataloogist pildifailid
@@ -69,9 +81,10 @@ foreach ([0, 1, 2] as $element) {
         array_push($photoNum, $drawNum); //lisab loositud numbrid massiivi
     }
 }
-$randomImageHTML = "";
-for ($i = 0; $i < count($photosToShow); $i++) {
-    $randomImageHTML .= '<img src="' . $picsDir . $photoList[$photosToShow[$i]] . '" alt="juhuslik pilt Haapsalust">' . "\n";
+///tsükkel et välja tuleks erinevad pildid
+$randomImageHTML = '';
+foreach ($photoNum as $drawNum) {
+    $randomImageHTML .= '<img src="' . $picsDir . $photoList[$drawNum] . '" alt="juhuslik pilt Haapsalust" width="250" height="250"/>' . "\n";
 }
 
 
@@ -104,6 +117,19 @@ if (isset($_POST["login"])) {
 <html lang="et">
 
 <head>
+    <style>
+        body {
+            background-color: <?php echo $backColor; ?>;
+        }
+
+        h1 {
+            color: <?php echo $fontColor; ?>;
+        }
+
+        p {
+            color: <?php echo $fontColor; ?>;
+        }
+    </style>
     <meta charset="utf-8">
     <title>Veebirakendused ja nende loomine 2020</title>
 </head>
@@ -131,9 +157,7 @@ if (isset($_POST["login"])) {
     <br>
     <hr>
     <h2>Uudis</h2>
-    <div>
-        <?php echo $newsHTML; ?>
-    </div>
+    <div><?php echo $newsHTML; ?> </div>
 </body>
 
 </html>

@@ -20,6 +20,7 @@ require("../../../../configuration.php");
 //var_dump($_FILES); / siin on üleslaetavad failid
 $originalPhotoDir = "../../uploadOriginalPhoto/";
 $normalPhotoDir = "../../uploadNormalPhoto/";
+$thumbnailDir = "../../uploadThumbnail";
 $error = null;
 $notice = null;
 $imageFileType = null;
@@ -120,7 +121,7 @@ if (isset($_POST["photoSubmit"])) {
 </head>
 
 <body>
-    <h1>Fotode üleaslaadimine</h1>
+    <h1>Fotode üleslaadimine</h1>
     <p>See leht on valminud õppetöö raames!</p>
     <p><?php echo $_SESSION["userFirstName"] . " " . $_SESSION["userLastName"] . "."; ?> Logi <a href="?logout=1">välja</a>!</p>
     <p>Tagasi <a href="home.php">avalehele</a>!</p>
