@@ -12,4 +12,12 @@ class Test
         echo "avalik number on: " . $this->number;
     } //konstruktor lõppeb
 
+    function __destruct()
+    {
+        echo "klass lõpetab";
+    }
+    public function reveal()
+    {
+        echo "salajane number on: " . $this->secretNum;
+    }
 }//class lõppeb
