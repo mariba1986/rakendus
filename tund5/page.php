@@ -6,6 +6,10 @@ require("fnc_users.php");
 require("classes/Session.class.php");
 
 SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
+require("classes/Test.class.php");
+$test = new Test();
+echo $test->secretNum;
+
 
 //$newsHTML = readNews(1)
 
