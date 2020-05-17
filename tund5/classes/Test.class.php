@@ -2,22 +2,24 @@
 class Test
 {
     //properties ehk muutujad
-    private $secretNum = 3; //st seda et ta on kättesaadav selle klassi piires aga väljaspool teda kasutada ei saa
+    private $secretNum = 3;
     public $number = 9;
 
-    function _construct()
+    function __construct()
     {
-        echo "laeti klass!";
-        echo "salajane number on: " . $this->secretNum;
-        echo "avalik number on: " . $this->number;
+        echo "Laeti klass!";
+        echo "Salajane number on: " . $this->secretNum;
+        echo "Avalik number on: " . $this->number;
+        $this->reveal();
     } //konstruktor lõppeb
 
     function __destruct()
     {
-        echo "klass lõpetab";
+        echo "Klass lõpetab!!!";
     }
+
     public function reveal()
     {
-        echo "salajane number on: " . $this->secretNum;
+        echo "Salajane number on: " . $this->secretNum;
     }
 }//class lõppeb
