@@ -67,7 +67,6 @@ if (isset($_POST["photoSubmit"])) {
         $error . "selline fail juba on";
     }
 
-
     //kui vigu pole
     if ($error == null) {
         // teen pildi väiksemaks
@@ -111,14 +110,11 @@ if (isset($_POST["photoSubmit"])) {
         } else {
             $error .= "Pildi üleslaadimisel tekkis viga";
         }
-        imagedestroy($myTempImage); //et mitte üleliigselt koormata serverit, viskab välja
-        imagedestroy($myNewImage);
 
         savePhotoData($id, $userid, $fileName, $origName, $altText, $privacy);
         //salvestame selle asja andmebaasi
     } //kui vigu pole lõppeb siit
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="et">
