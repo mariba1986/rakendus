@@ -23,9 +23,9 @@ require("classes/Photo.class.php");
 //var_dump($_POST);
 //var_dump($_FILES);
 
-$originalPhotoDir = "../../uploadOriginalPhoto/";
-$normalPhotoDir = "../../uploadNormalPhoto/";
-$thumbPhotoDir = "../../uploadThumbnail";
+//$originalPhotoDir = "../../uploadOriginalPhoto/";
+//$normalPhotoDir = "../../uploadNormalPhoto/";
+//$thumbPhotoDir = "../../uploadThumbnail";
 $error = null;
 $notice = null;
 $imageFileType = null;

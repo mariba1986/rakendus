@@ -1,5 +1,4 @@
 <?php
-require("../../../../configuration.php");
 
 //sessiooni käivitamine või kasutamine
 //session_start();

@@ -1,3 +1,4 @@
+  
 <?php
 function readAllMyPictureThumbs()
 {
@@ -36,7 +37,7 @@ function readAllSemiPublicPictureThumbs()
     $stmt->bind_result($filenameFromDb, $altFromDb);
     $stmt->execute();
     while ($stmt->fetch()) {
-        $html .= '<a href="' . $GLOBALS["normalPhotoDir"] . $filenameFromDb . '" target="_blank"><img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '"></a>' . "\n \t \t";
+        $html .= '<a href="' . $GLOBALS["normalPhotoDir"] . $filenameFromDb . '"target="_blank"><img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '"></a>' . "\n \t \t";
     }
     if ($html != "") {
         $finalHTML = $html;

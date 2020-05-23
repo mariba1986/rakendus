@@ -124,6 +124,6 @@ class Photo
             $waterMarkY = round((imagesy($this->myNewImage) - $waterMarkH) / 2, 0);
         }
         imagecopy($this->myNewImage, $waterMark, $waterMarkX, $waterMarkY, 0, 0, $waterMarkW, $waterMarkH);
-    } //addWatermark lõppeb
+    } //addwatermark lõppeb
 
 }//klass lõppeb

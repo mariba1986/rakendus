@@ -12,6 +12,7 @@ if (!isset($_SESSION["userid"])) {
 if (isset($_GET["logout"])) {
     session_destroy();
     header("Location: page.php");
+    require("classes/Photo.class.php");
 }
 
 require("../../../../configuration.php");
@@ -31,11 +32,12 @@ $fileNamePrefix = "vr_";
 $fileName = null;
 $maxWidth = 600;
 $maxHeight = 400;
-$altText = $_POST["altText"];
+$thumbSize = 100;
+/* $altText = $_POST["altText"];
 $origName = $_FILES["fileToUpload"]["name"];
 $id = null;
 $userid = $_SESSION["userid"];
-$privacy = $_POST["privacy"];
+$privacy = $_POST["privacy"]; */
 
 if (isset($_POST["photoSubmit"])) {
     //kontrollime kas tegu on üldse pildiga:
@@ -45,6 +47,7 @@ if (isset($_POST["photoSubmit"])) {
         if ($check["mime"] == "image/jpeg") {
             $imageFileType = "jpg";
         } elseif ($check["mime"] == "image/png") {
+            $imageFileType = "png";
         } else {
             $error = "ainult jpg/png on lubatud";
         }
@@ -70,8 +73,13 @@ if (isset($_POST["photoSubmit"])) {
 
     //kui vigu pole
     if ($error == null) {
+
+        $photoUp = new Photo($_FILES["fileToUpload"], $imageFileType);
+        $photoUp->resizePhoto($maxWidth, $maxHeight);
+        $photoUp->addWatermark("vr_watermark.png", 3, 10);
+
         // teen pildi väiksemaks
-        if ($imageFileType == "jpg") {
+        /* if ($imageFileType == "jpg") {
             $myTempImage = imagecreatefromjpeg($_FILES["fileToUpload"]["tmp_name"]);
         }
         if ($imageFileType == "png") {
@@ -89,9 +97,17 @@ if (isset($_POST["photoSubmit"])) {
         $newH = round($imageH / $imageSizeRatio);
         //loome uue ajutise pildiobjekti
         $myNewImage = imagecreatetruecolor($newW, $newH);
-        imagecopyresampled($myNewImage, $myTempImage, 0, 0, 0, 0, $newW, $newH, $imageW, $imageH);
+        imagecopyresampled($myNewImage, $myTempImage, 0, 0, 0, 0, $n ewW, $newH, $imageW, $imageH);*/
         //salvestame vähendatud kujutise faili
-        if ($imageFileType == "jpg") {
+        $result = $photoUp->saveImgToFile($normalPhotoDir . $fileName);
+        if ($result == 1) {
+            $notice = "Vähendatud pilt laeti üles! ";
+        } else {
+            $error = "Vähendatud pildi salvestamisel tekkis viga!";
+        }
+
+        $photoUp->resizePhoto($thumbSize, $thumbSize);
+        /* if ($imageFileType == "jpg") {
             if (imagejpeg($myNewImage, $normalPhotoDir . $fileName, 90)) { //see imagejpg käsklus muudab pildi failiks
                 $notice = "Vähendatud pilt laeti üles!";
             } else {
@@ -103,21 +119,28 @@ if (isset($_POST["photoSubmit"])) {
                 $notice = "Vähendatud pilt laeti üles!";
             } else {
                 $error = "Vähendatud pildi laadimisel tekkis viga";
-            }
-        }
+            } */
+    }
+    $result = $photoUp->saveImgToFile($thumbPhotoDir . $fileName);
+    if ($result == 1) {
+        $notice = "Pisipilt laeti üles! ";
+    } else {
+        $error .= " Pisipildi salvestamisel tekkis viga!";
+    }
+    unset($photoUp);
 
-        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $originalTarget)) {
-            $notice .= "Originaalpilt laeti üles!";
-        } else {
-            $error .= "Pildi üleslaadimisel tekkis viga";
-        }
-        imagedestroy($myTempImage); //et mitte üleliigselt koormata serverit, viskab välja
-        imagedestroy($myNewImage);
+    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $originalTarget)) {
+        $notice .= "Originaalpilt laeti üles!";
+    } else {
+        $error .= "Pildi üleslaadimisel tekkis viga";
+    }
+    /*         imagedestroy($myTempImage); //et mitte üleliigselt koormata serverit, viskab välja
+        imagedestroy($myNewImage); */
 
-        savePhotoData($id, $userid, $fileName, $origName, $altText, $privacy);
-        //salvestame selle asja andmebaasi
-    } //kui vigu pole lõppeb siit
-}
+    savePhotoData($id, $userid, $fileName, $origName, $altText, $privacy);
+    //salvestame selle asja andmebaasi
+} //kui vigu pole lõppeb siit
+
 
 ?>
 <!DOCTYPE html>
