@@ -5,7 +5,7 @@
 	//session_start();
 	//var_dump($_SESSION);
 	require("classes/Session.class.php");
-	SessionManager::sessionStart("vr20", 0, "/~andrus.rinde/", "tigu.hk.tlu.ee");
+	SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 	
 	//kas pole sisseloginud
 	if(!isset($_SESSION["userid"])){
@@ -20,6 +20,7 @@
 	}
 
 	require("../../../../configuration.php");
+	require("classes/Photo.class.php");
 	require("fnc_gallery.php");
 	
 	$page = 1; //vaikimisi määran lehe numbriks 1 (see on vajalik näiteks siis, kui esimest korda galerii avatakse ja lehtedega pole veel tegeletud)
@@ -66,6 +67,8 @@
 	?>
     <div class="gallery">
 		<?php echo $privateThumbnails; ?>
+
+		
 	</div>
 	<hr>
 </body>

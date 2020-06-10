@@ -30,8 +30,8 @@ if (isset($_POST['studyBtn'])) {
 		$studyError .= "Aeg on määramata! ";
 	}
 
-	if ($_POST) $response = saveStudy($studyTopicId, $studyActivity, $elapsedTime);
-	/* if (empty($studyError)) {
+	// if ($_POST) $response = saveStudy($studyTopicId, $studyActivity, $elapsedTime);
+	if (empty($studyError)) {
 
 		$response = saveStudy($studyTopicId, $studyActivity, $elapsedTime);
 		//echo "Salvestame!";
@@ -39,7 +39,8 @@ if (isset($_POST['studyBtn'])) {
 			$studyError = "Salvestatud!";
 		} else {
 			$studyError = "Salvestamisel tekkis viga!";
-		} */
+		}
+	}
 }
 
 ?>
@@ -59,7 +60,7 @@ if (isset($_POST['studyBtn'])) {
 	<p>Leht on valminud õppetöö raames!</p>
 	<div>
 		<form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) ?>">
-			<select name="õppeaine" required>
+			<select name="studyTopicId" required>
 				<option value="" selected disabled>Õppeaine</option>
 				<option value="1">Veebirakendused ja nende loomine</option>
 				<option value="2">Programmeerimine</option>
@@ -67,7 +68,7 @@ if (isset($_POST['studyBtn'])) {
 				<option value="4">Disaini alused</option>
 				<option value="5">Andmebaasid</option>
 			</select>
-			<select name="tegevus" required>
+			<select name="studyActivity" required>
 				<option value="" selected disabled>Tegevus</option>
 				<option value="1">Iseseisev materjali omandamine</option>
 				<option value="2">Koduste ülesannete lahendamine</option>

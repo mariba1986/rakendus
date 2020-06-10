@@ -58,7 +58,7 @@ function saveStudy($studyTopicId, $studyActivity, $elapsedTime)
 {
 
     $response = null;
-    //oon andmebaasi ühenduse
+    //Loon andmebaasi ühenduse
     $conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
     //valmistame ette SQL päringu //statementist tulnud lühend
     $stmt = $conn->prepare("INSERT INTO vr20_studylog (course, activity, time) VALUES ( ?, ?, ?)");

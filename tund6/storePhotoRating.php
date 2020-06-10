@@ -1,6 +1,6 @@
 <?php
 require("classes/Session.class.php");
-SessionManager::sessionStart("vr20", 0, "/~andrus.rinde/", "tigu.hk.tlu.ee");
+SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
 $id = $_REQUEST["photoid"];
 $rating = $_REQUEST["rating"];

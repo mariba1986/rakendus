@@ -72,18 +72,6 @@ $gallery = readAllSemiPublicPictureThumbsPage();
                 <p id="modalCaption"></p>
                 <img src="empty.png" id="modalImg" class="modalImg" alt="galeriipilt">
 
-                <br>
-                <div id="rating" class="modalRating">
-                    <label><input id="rate1" name="rating" type="radio" value="1">1</label>
-                    <label><input id="rate2" name="rating" type="radio" value="2">2</label>
-                    <label><input id="rate3" name="rating" type="radio" value="3">3</label>
-                    <label><input id="rate4" name="rating" type="radio" value="4">4</label>
-                    <label><input id="rate5" name="rating" type="radio" value="5">5</label>
-                    <button id="storeRating">Salvesta hinnang!</button>
-                    <br>
-                    <p id="avgRating"></p>
-                </div>
-
             </div>
         </div>
     </div>

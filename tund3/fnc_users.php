@@ -1,6 +1,7 @@
 <?php
 
-
+//sessiooni käivitamine või kasutamine
+//session_start();
 function test_input($data)
 {
     $data = trim($data);
@@ -8,28 +9,19 @@ function test_input($data)
     $data = htmlspecialchars($data);
     return $data;
 }
-//sessiooni käivitamine või kasutamine
-//session_start();
 
 function signUp($name, $surname, $email, $gender, $birthDate, $password)
 {
     $notice = null;
     $conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-    $stmt = $conn->prepare("SELECT id FROM vr20_users WHERE email=?");
-    if ($stmt->fetch()) {
-        $notice = "Selline kasutaja (" . $email . ") on juba olemas, vali uus või logi sisse!";
-        $stmt->close();
-        return $notice;
-    } else {
-        $stmt = $conn->prepare("INSERT INTO vr20_users (firstname, lastname, birthdate, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
-        echo $conn->error;
-    }
-    // nüüd tuleks parool ära krüpteerida:
-    $options = ["cost" => 12, "salt" => substr(sha1(rand()), 0, 22)];  //1)näitab ära kui palju vaeva nähakse krüpteerimisega. 12 on päris palju. 2)salt - lisatakse paroolile enne krüpteerimist lisastring. Mingi kombinatsioon tähemärke mis muudab parooli keerukamaks ja räsi keerukamas.
+    $stmt = $conn->prepare("INSERT INTO vr20_users (firstname, lastname, birthdate, gender, email, password) VALUES (?, ?, ?, ?, ?, ?)");
+    echo $conn->error;
+
+    //krüpteerin parooli
+    $options = ["cost" => 12, "salt" => substr(sha1(rand()), 0, 22)];
     $pwdhash = password_hash($password, PASSWORD_BCRYPT, $options);
 
-    $stmt->bind_param("sssiss", $name, $surname, $birthDate, $gender, $email, $pwdhash);  //oluline on järjekord mis on sql käsus ehk seal kus se stmt on, mitte sama järjekord mis on ülemises reas(rida 2)
-
+    $stmt->bind_param("sssiss", $name, $surname, $birthDate, $gender, $email, $pwdhash);
 
     if ($stmt->execute()) {
         $notice = "ok";
@@ -60,12 +52,12 @@ function signIn($email, $password)
             $stmt->close();
             $conn->close();
             header("Location: home.php");
-            exit(); //kui kõik klapid, sulgeb ühendused ja läheb järgmisele lehele ja ei ole vaja enam koodis edasi minna    
+            exit();
         } else {
-            $notice = "vale salasõna!";
+            $notice = "Vale salasõna!";
         }
     } else {
-        $notice = "Sellist kasutajat(" . $email . ") ei leitud!";
+        $notice = "Sellist kasutajat (" . $email . ") ei leitud!";
     }
 
     $stmt->close();

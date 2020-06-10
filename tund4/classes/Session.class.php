@@ -14,47 +14,45 @@ class SessionManager
 		session_start();
 
 		// Make sure the session hasn't expired, and destroy it if it has
-		if(self::validateSession())
-		{
+		if (self::validateSession()) {
 			// Check to see if the session is new or a hijacking attempt
-			if(!self::preventHijacking())
-			{
+			if (!self::preventHijacking()) {
 				// Reset session data and regenerate id
 				$_SESSION = array();
 				$_SESSION['IPaddress'] = $_SERVER['REMOTE_ADDR'];
 				$_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'];
 				self::regenerateSession();
 
-			// Give a 5% chance of the session id changing on any request
-			}elseif(rand(1, 100) <= 5){
+				// Give a 5% chance of the session id changing on any request
+			} elseif (rand(1, 100) <= 5) {
 				self::regenerateSession();
 			}
-		}else{
+		} else {
 			$_SESSION = array();
 			session_destroy();
 			session_start();
 		}
 	}
-	
+
 	static protected function preventHijacking()
 	{
-		if(!isset($_SESSION['IPaddress']) || !isset($_SESSION['userAgent']))
+		if (!isset($_SESSION['IPaddress']) || !isset($_SESSION['userAgent']))
 			return false;
 
 		if ($_SESSION['IPaddress'] != $_SERVER['REMOTE_ADDR'])
 			return false;
 
-		if( $_SESSION['userAgent'] != $_SERVER['HTTP_USER_AGENT'])
+		if ($_SESSION['userAgent'] != $_SERVER['HTTP_USER_AGENT'])
 			return false;
 
 		return true;
 	}
-	
+
 	static function regenerateSession()
 	{
 		// If this session is obsolete it means there already is a new id
 		//if(isset($_SESSION['OBSOLETE']) || $_SESSION['OBSOLETE'] == true)
-		if(isset($_SESSION['OBSOLETE']) && $_SESSION['OBSOLETE'] == true)
+		if (isset($_SESSION['OBSOLETE']) && $_SESSION['OBSOLETE'] == true)
 			return;
 
 		// Set current session to expire in 10 seconds
@@ -76,16 +74,15 @@ class SessionManager
 		unset($_SESSION['OBSOLETE']);
 		unset($_SESSION['EXPIRES']);
 	}
-	
+
 	static protected function validateSession()
 	{
-		if( isset($_SESSION['OBSOLETE']) && !isset($_SESSION['EXPIRES']) )
+		if (isset($_SESSION['OBSOLETE']) && !isset($_SESSION['EXPIRES']))
 			return false;
 
-		if(isset($_SESSION['EXPIRES']) && $_SESSION['EXPIRES'] < time())
+		if (isset($_SESSION['EXPIRES']) && $_SESSION['EXPIRES'] < time())
 			return false;
 
 		return true;
-	}	
-	
+	}
 }//class lõppeb

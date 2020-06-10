@@ -32,10 +32,10 @@ function readNewsPage($limit)
     //loon andmebaasiühenduse
     $conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
     //$stmt = $conn->prepare("SELECT title, content FROM vr20_news");
-    $stmt = $conn->prepare("SELECT title, content, created FROM vr20_news WHERE deleted IS NULL ORDER BY id DESC LIMIT ?");
+    $stmt = $conn->prepare("SELECT userid, title, content, created FROM vr20_news WHERE deleted IS NULL ORDER BY id DESC LIMIT ?");
     echo $conn->error;
     $stmt->bind_param("i", $limit);
-    $stmt->bind_result($titleFromDB, $contentFromDB, $createdFromDB);
+    $stmt->bind_result($userIDFromDB, $titleFromDB, $contentFromDB, $createdFromDB);
     $stmt->execute();
     //if($stmt->fetch())
     //<h2>uudisepealkiri</h2>
@@ -43,6 +43,7 @@ function readNewsPage($limit)
     while ($stmt->fetch()) {
         $addedDate = new DateTime($createdFromDB);
         $response .= "<h3>" . $titleFromDB . "</h3> \n";
+        $response .= "<p> Sisestas kasutaja: " . $userIDFromDB . "</p> \n";
         $response .= "<p>Lisatud: " . $addedDate->format("d.m.Y H:i:s") . "</p> \n";
         $response .= "<p>" . $contentFromDB . "</p> \n";
     }

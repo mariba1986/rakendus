@@ -7,12 +7,11 @@ require("classes/Session.class.php");
 
 SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
-require("classes/Test.class.php");
+/* require("classes/Test.class.php");
 $test = new Test();
 //echo $test->number;
 $test->reveal();
-unset($test);
-
+unset($test); */
 
 
 $myName = "Maris Riba";
@@ -20,15 +19,23 @@ $fullTimeNow = date("d.m.Y H:i:s");
 //<p>Lehe avamise hetkel oli: <strong>31.01.2020 11:32:07</strong></p>
 $timeHTML = "\n <p>Lehe avamise hetkel oli: <strong>" . $fullTimeNow . "</strong></p> \n";
 $hourNow = date("H");
-$partOfDay = "hägune aeg";
+//$partOfDay = "hägune aeg";
 
 if ($hourNow < 10) {
     $partOfDay = "hommik";
-}
-if ($hourNow >= 10 and $hourNow < 18) {
+    $backColor = '#7CBDC2';
+    $fontColor = '#407999';
+} elseif ($hourNow >= 10 and $hourNow < 18) {
     $partOfDay = "aeg aktiivselt tegutseda";
+    $backColor = '#50C30A';
+    $fontColor = '#324726';
+} else {
+    $partOfDay = "hägune aeg";
+    $backColor = '#B2A29F';
+    $fontColor = '#7C463C';
 }
 $partOfDayHTML = "<p>Käes on " . $partOfDay . "!</p> \n";
+
 
 //info semestri kulgemise kohta
 $semesterStart = new DateTime("2020-1-27");
@@ -68,43 +75,20 @@ $photoCount = count($photoList);
 //$photoNum = mt_rand(0, $photoCount - 1);
 //$randomImageHTML = '<img src="' .$picsDir .$photoList[$photoNum] .'" alt="juhuslik pilt Haapsalust">' ."\n";
 
-$photosToShow = [];
-$photoCountLimit = 3;
-if ($photoCount < 3) {
-    $photoCountLimit = $photoCount;
-}
-for ($i = 0; $i < $photoCountLimit; $i++) {
+$photoNum = [];
+foreach ([0, 1, 2] as $element) {
     do {
-        $photoNum = mt_rand(0, ($photoCount - 1));
-    } while (in_array($photoNum, $photosToShow) == true);
-    array_push($photosToShow, $photoNum);
+        $drawNum = mt_rand(0, $photoCount - 1);
+    } while (in_array($drawNum, $photoNum)); {
+        array_push($photoNum, $drawNum); //lisab loositud numbrid massiivi
+    }
 }
-$randomImageHTML = "";
-for ($i = 0; $i < count($photosToShow); $i++) {
-    $randomImageHTML .= '<img src="' . $picsDir . $photoList[$photosToShow[$i]] . '" alt="juhuslik pilt Haapsalust">' . "\n";
+///tsükkel et välja tuleks erinevad pildid
+$randomImageHTML = '';
+foreach ($photoNum as $drawNum) {
+    $randomImageHTML .= '<img src="' . $picsDir . $photoList[$drawNum] . '" alt="juhuslik pilt Haapsalust" width="250" height="250"/>' . "\n";
 }
 
-//kellaajast sõltuv värvi osa
-$bgColor = "#FFFFFF";
-$txtColor = "#000000";
-if ($hourNow > 21 or $hourNow < 7) {
-    $bgColor = "#000033";
-    $txtColor = "#FFFFEE";
-} elseif ($hourNow >= 7 and $hourNow < 12) {
-    $bgColor = "#FFFFEE";
-    $txtColor = "#000033";
-} elseif ($hourNow >= 12 and $hourNow < 18) {
-    $bgColor = "#FFFFFF";
-    $txtColor = "#000066";
-} else {
-    $bgColor = "#999999";
-    $txtColor = "#000033";
-}
-$styleHTML = "<style> \n .timeBackground { \n background-color: ";
-$styleHTML .= $bgColor;
-$styleHTML .= "; \n color: ";
-$styleHTML .= $txtColor;
-$styleHTML .= "; \n } \n </style> \n";
 
 $newsHTML = readNewsPage(1);
 
@@ -135,11 +119,21 @@ if (isset($_POST["login"])) {
 <html lang="et">
 
 <head>
+    <style>
+        body {
+            background-color: <?php echo $backColor; ?>;
+        }
+
+        h1 {
+            color: <?php echo $fontColor; ?>;
+        }
+
+        p {
+            color: <?php echo $fontColor; ?>;
+        }
+    </style>
     <meta charset="utf-8">
     <title>Veebirakendused ja nende loomine 2020</title>
-    <?php
-    echo $styleHTML;
-    ?>
 </head>
 
 <body>
@@ -164,10 +158,7 @@ if (isset($_POST["login"])) {
     ?>
     <br>
     <hr>
-    <h2>Uudis</h2>
-    <div>
-        <?php echo $newsHTML; ?>
-    </div>
+    
 </body>
 
 </html>
