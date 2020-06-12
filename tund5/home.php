@@ -41,6 +41,8 @@ if (isset($_GET["logout"])) {
     <ul>
         <li><a href="addnews.php">Uudiste lisamise</a></li>
         <li><a href="news.php">Uudiste lugemise</a></li>
+        <li><a href="study.php">Õppimise lisamine</a></li>
+        <li><a href="studydata.php">Õppimiste vaatamine</a></li>
         <li><a href="photoUpload.php">Fotode üleslaadimine</a></li>
         <li><a href="privategallery.php">Minu pildid</a></li>
         <li><a href="semipublicgallery.php">Kõigi kasutajate avaldatavad pildid</a></li>

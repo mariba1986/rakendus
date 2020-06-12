@@ -12,18 +12,20 @@ if (!isset($_SESSION["userid"])) {
 if (isset($_GET["logout"])) {
     session_destroy();
     header("Location: page.php");
-    require("classes/Photo.class.php");
 }
 
 require("../../../../configuration.php");
-require("fnc_photo.php");
+require("fnc_photoupload.php");
+require("classes/Photo.class.php");
 
-//pildi üleslaadimise osa
-//var_dump($_POST); //siin on kogu muu kraam
-//var_dump($_FILES); // siin on üleslaetavad failid
-$originalPhotoDir = "../../uploadOriginalPhoto/";
-$normalPhotoDir = "../../uploadNormalPhoto/";
-$thumbnailDir = "../../uploadThumbnail";
+//pildi üleslaadimine osa
+
+//var_dump($_POST);
+//var_dump($_FILES);
+
+//$originalPhotoDir = "../../uploadOriginalPhoto/";
+//$normalPhotoDir = "../../uploadNormalPhoto/";
+//$thumbPhotoDir = "../../uploadThumbnail";
 $error = null;
 $notice = null;
 $imageFileType = null;
@@ -33,15 +35,11 @@ $fileName = null;
 $maxWidth = 600;
 $maxHeight = 400;
 $thumbSize = 100;
-/* $altText = $_POST["altText"];
-$origName = $_FILES["fileToUpload"]["name"];
-$id = null;
-$userid = $_SESSION["userid"];
-$privacy = $_POST["privacy"]; */
 
-if (isset($_POST["photoSubmit"])) {
-    //kontrollime kas tegu on üldse pildiga:
-    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"], $originalTarget);
+if (isset($_POST["photoSubmit"]) and !empty($_FILES["fileToUpload"]["tmp_name"])) {
+
+    //kas üldse on pilt?
+    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
     if ($check !== false) {
         //failitüübi väljaselgitamine ja sobivuse kontroll
         if ($check["mime"] == "image/jpeg") {
@@ -49,56 +47,49 @@ if (isset($_POST["photoSubmit"])) {
         } elseif ($check["mime"] == "image/png") {
             $imageFileType = "png";
         } else {
-            $error = "ainult jpg/png on lubatud";
+            $error = "Ainult jpg ja png pildid on lubatud! ";
         }
     } else {
-        $error = "Valitud fail ei ole pilt";
+        $error = "Valitud fail ei ole pilt! ";
     }
-    //kontrollime et ega pilt liiga suur ei ole
+
+    //ega pole liiga suur
     if ($_FILES["fileToUpload"]["size"] > $fileUploadSizeLimit) {
-        $error .= "valitud fail on liiga suur";
+        $error .= "Valitud fail on liiga suur! ";
     }
-    //loome oma failinime
+
+    //loome oma nime failile
     $timestamp = microtime(1) * 10000;
     $fileName = $fileNamePrefix . $timestamp . "." . $imageFileType;
 
-    // $originalTarget = $originalPhotoDir . $_FILES["fileToUpload"]["name"];
+    //$originalTarget = $originalPhotoDir .$_FILES["fileToUpload"]["name"];
     $originalTarget = $originalPhotoDir . $fileName;
 
-    //kontrollime kas selline fail juba on serveris
+    //äkki on fail olemas?
     if (file_exists($originalTarget)) {
-        $error . "selline fail juba on";
+        $error .= "Selline fail on juba olemas!";
     }
-
 
     //kui vigu pole
     if ($error == null) {
 
         $photoUp = new Photo($_FILES["fileToUpload"], $imageFileType);
+
+        //teen pildi väiksemaks
+        /* if($imageFileType == "jpg"){
+				$myTempImage = imagecreatefromjpeg($_FILES["fileToUpload"]["tmp_name"]);
+			}
+			if($imageFileType == "png"){
+				$myTempImage = imagecreatefrompng($_FILES["fileToUpload"]["tmp_name"]);
+			} */
+
+        //$myNewImage = resizePhoto($myTempImage, $maxWidth, $maxHeight);
         $photoUp->resizePhoto($maxWidth, $maxHeight);
+
+        //lisan vesimärgi
         $photoUp->addWatermark("vr_watermark.png", 3, 10);
 
-        // teen pildi väiksemaks
-        /* if ($imageFileType == "jpg") {
-            $myTempImage = imagecreatefromjpeg($_FILES["fileToUpload"]["tmp_name"]);
-        }
-        if ($imageFileType == "png") {
-            $myTempImage = imagecreatefrompng($_FILES["fileToUpload"]["tmp_name"]);
-        }
-
-        $imageW = imagesx($myTempImage);
-        $imageH = imagesy($myTempImage);
-        if ($imageW / $maxWidth > $imageH / $maxHeight) {
-            $imageSizeRatio = $imageW / $maxWidth;
-        } else {
-            $imageSizeRatio = $imageH / $maxHeight;
-        }
-        $newW = round($imageW / $imageSizeRatio);
-        $newH = round($imageH / $imageSizeRatio);
-        //loome uue ajutise pildiobjekti
-        $myNewImage = imagecreatetruecolor($newW, $newH);
-        imagecopyresampled($myNewImage, $myTempImage, 0, 0, 0, 0, $n ewW, $newH, $imageW, $imageH);*/
-        //salvestame vähendatud kujutise faili
+        //$result = saveImgToFile($photoUp->myNewImage, $normalPhotoDir . $fileName, $imageFileType);
         $result = $photoUp->saveImgToFile($normalPhotoDir . $fileName);
         if ($result == 1) {
             $notice = "Vähendatud pilt laeti üles! ";
@@ -107,41 +98,39 @@ if (isset($_POST["photoSubmit"])) {
         }
 
         $photoUp->resizePhoto($thumbSize, $thumbSize);
-        /* if ($imageFileType == "jpg") {
-            if (imagejpeg($myNewImage, $normalPhotoDir . $fileName, 90)) { //see imagejpg käsklus muudab pildi failiks
-                $notice = "Vähendatud pilt laeti üles!";
+
+        //lõpetame vähendatud pildiga ja teeme thumbnail'i
+        /* imageDestroy($myNewImage);
+			$myNewImage = resizePhoto($myTempImage, $thumbSize, $thumbSize); */
+        //$result = saveImgToFile($photoUp->myNewImage, $thumbPhotoDir . $fileName, $imageFileType);
+        $result = $photoUp->saveImgToFile($thumbPhotoDir . $fileName);
+        if ($result == 1) {
+            $notice = "Pisipilt laeti üles! ";
+        } else {
+            $error .= " Pisipildi salvestamisel tekkis viga!";
+        }
+
+        /* imageDestroy($myNewImage);
+			imagedestroy($myTempImage); */
+        unset($photoUp);
+
+        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $originalTarget)) {
+            $notice .= "Originaalpilt laeti üles! ";
+        } else {
+            $error .= " Pildi üleslaadimisel tekkis viga!";
+        }
+
+        //kui kõik hästi, salvestame info andmebaasi!!!
+        if ($error == null) {
+            $result = addPhotoData($fileName, $_POST["altText"], $_POST["privacy"], $_FILES["fileToUpload"]["name"]);
+            if ($result == 1) {
+                $notice .= "Pildi andmed lisati andmebaasi!";
             } else {
-                $error = "Vähendatud pildi laadimisel tekkis viga";
+                $error .= " Pildi andmete lisamisel andmebaasi tekkis tehniline tõrge: " . $result;
             }
         }
-        if ($imageFileType == "png") {
-            if (imagepng($myNewImage, $normalPhotoDir . $fileName, 6)) { //see käsklus muudab pildi png failiks
-                $notice = "Vähendatud pilt laeti üles!";
-            } else {
-                $error = "Vähendatud pildi laadimisel tekkis viga";
-            } */
-    }
-    $result = $photoUp->saveImgToFile($thumbPhotoDir . $fileName);
-    if ($result == 1) {
-        $notice = "Pisipilt laeti üles! ";
-    } else {
-        $error .= " Pisipildi salvestamisel tekkis viga!";
-    }
-    unset($photoUp);
-
-    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $originalTarget)) {
-        $notice .= "Originaalpilt laeti üles!";
-    } else {
-        $error .= "Pildi üleslaadimisel tekkis viga";
-    }
-    /*         imagedestroy($myTempImage); //et mitte üleliigselt koormata serverit, viskab välja
-        imagedestroy($myNewImage); */
-
-    savePhotoData($id, $userid, $fileName, $origName, $altText, $privacy);
-    //salvestame selle asja andmebaasi
-} //kui vigu pole lõppeb siit
-
-
+    } //kui vigu pole
+}
 ?>
 <!DOCTYPE html>
 <html lang="et">
@@ -159,13 +148,14 @@ if (isset($_POST["photoSubmit"])) {
     <hr>
 
     <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" enctype="multipart/form-data">
-        <label>Vali pildifail </label><br>
+        <label>Vali pildifail! </label><br>
         <input type="file" name="fileToUpload"><br>
-        <label>Alt tekst</label><input type="text" , name="altText"><br>
+        <label>Alt tekst: </label><input type="text" name="altText"><br>
         <label>Privaatsus</label><br>
         <label for="priv1">Privaatne</label><input id="priv1" type="radio" name="privacy" value="3" checked><br>
         <label for="priv2">Sisseloginud kasutajatele</label><input id="priv2" type="radio" name="privacy" value="2"><br>
         <label for="priv3">Avalik</label><input id="priv3" type="radio" name="privacy" value="1"><br>
+
         <input type="submit" name="photoSubmit" value="Lae valitud pilt üles!">
         <span><?php echo $error;
                 echo $notice; ?></span>

@@ -1,28 +1,22 @@
-<!-- <?php
-/* 
-function savePhotoData($id, $userid, $fileName, $origName, $altText, $privacy)
+<?php
+function addPhotoData($fileName, $alt, $privacy, $origName)
 {
-    $response = null;
-    //loon andmebaasiühenduse
+    $notice = null;
     $conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-    //valmistan ette SQL päringu
-    $stmt = $conn->prepare("INSERT INTO vr20_photos (id, userid, filename, origname, alttext, privacy) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt = $conn->prepare("INSERT INTO vr20_photos (userid, filename, alttext, privacy, origname) VALUES (?, ?, ?, ?, ?)");
     echo $conn->error;
-    //seon päringuga tegelikud andmed
-    $stmt->bind_param("iisssi", $id, $userid, $fileName, $origName, $altText, $privacy);
-    //i -integer  s - string d - decimal
+    $stmt->bind_param("issis", $_SESSION["userid"], $fileName, $alt, $privacy, $origName);
     if ($stmt->execute()) {
-        $response = 1;
+        $notice = 1;
     } else {
-        $response = 0;
-        echo $stmt->error;
+        $notice = $stmt->error;
     }
-    //sulgen päringu ja andmebaasiühenduse
+
     $stmt->close();
     $conn->close();
-    return $response;
-} */
-/* 
+    return $notice;
+}
+
 function resizePhoto($src, $w, $h, $keepOrigProportion = true)
 {
     $imageW = imagesx($src);
@@ -56,10 +50,10 @@ function resizePhoto($src, $w, $h, $keepOrigProportion = true)
             $cutSizeW = round($imageH / $h * $w);
             $cutX = round(($imageW - $cutSizeW) / 2);
         }
-    } */
+    }
 
     //loome uue ajutise pildiobjekti
-/*     $myNewImage = imagecreatetruecolor($newW, $newH);
+    $myNewImage = imagecreatetruecolor($newW, $newH);
     //kui on läbipaistvusega png pildid, siis on vaja säilitada läbipaistvusega
     imagesavealpha($myNewImage, true);
     $transColor = imagecolorallocatealpha($myNewImage, 0, 0, 0, 127);
@@ -87,4 +81,3 @@ function saveImgToFile($myNewImage, $target, $imageFileType)
     }
     return $notice;
 }
- --> */
