@@ -1,10 +1,11 @@
 <?php
-//require("../../../../configuration.php");
 
 //sessiooni käivitamine või kasutamine
 //session_start();
 //var_dump($_SESSION);
 require("classes/Session.class.php");
+require("../../../../configuration.php");
+require("fnc_gallery.php");
 SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
 //kas pole sisseloginud
@@ -18,9 +19,8 @@ if (isset($_GET["logout"])) {
 	session_destroy();
 	header("Location: page.php");
 }
-require("../../../../configuration.php");
 
-require("fnc_gallery.php");
+
 $page = 1; //vaikimisi määran lehe numbriks 1 (see on vajalik näiteks siis, kui esimest korda galerii avatakse ja lehtedega pole veel tegeletud)
 $limit = 5; //mitu pilti ühele lehele soovin mahutada. Reaalelus oleks normaalne palju suurem number, näiteks 30 jne
 $picCount = countPrivatePics(); //küsin kõigi näidatavate piltide arvu, et teada, palju lehekülgi üldse olla võiks. Parameetriks piltide privaatsus. Funktsioon ise näitena allpool.
@@ -51,7 +51,7 @@ $galleryHTML = readgalleryImages($page, $limit); //nõutud piltide jaoks vajalik
 </head>
 
 <body>
-	<h1>Minu oma pildid</h1>
+	<h1>Minu lisatud pildid</h1>
 	<p>See leht on valminud õppetöö raames!</p>
 	<p><?php echo $_SESSION["userFirstName"] . " " . $_SESSION["userLastName"] . "."; ?> Logi <a href="?logout=1">välja</a>!</p>
 	<p>Tagasi <a href="home.php">avalehele</a>!</p>

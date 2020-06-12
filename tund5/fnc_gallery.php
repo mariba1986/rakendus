@@ -47,33 +47,10 @@ function readAllSemiPublicPictureThumbs()
 	$conn->close();
 	return $finalHTML;
 }
-function readGalleryImages($page, $limit)
+
+function countPics()
 {
 	$privacy = 2;
-	$finalHTML = "";
-	$html = "";
-	$lower_bound = ($page - 1) * $limit;
-	$conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
-	$stmt = $conn->prepare("SELECT filename, alttext FROM vr20_photos WHERE privacy<=? AND deleted IS NULL LIMIT ?,?");
-	echo $conn->error;
-	$stmt->bind_param("iii", $privacy, $lower_bound, $limit);
-	$stmt->bind_result($filenameFromDb, $altFromDb);
-	$stmt->execute();
-	while ($stmt->fetch()) {
-		$html .= '<a href="' . $GLOBALS["normalPhotoDir"] . $filenameFromDb . '" target="_blank"><img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '"></a>' . "\n \t \t";
-	}
-	if ($html != "") {
-		$finalHTML = $html;
-	} else {
-		$finalHTML = "<p>Kahjuks pilte pole!</p>";
-	}
-	$stmt->close();
-	$conn->close();
-	return $finalHTML;
-}
-
-function countPics($privacy)
-{
 	$notice = null;
 	$conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
 	$stmt = $conn->prepare("SELECT COUNT(id) FROM vr20_photos WHERE privacy<=? AND deleted IS NULL");
@@ -135,10 +112,34 @@ function readAllMyPictureThumbsPage($page, $limit)
 	$conn->close();
 	return $finalHTML;
 }
+function readGalleryImages($page, $limit)
+{
+	$privacy = 2;
+	$finalHTML = "";
+	$html = "";
+	$lower_bound = ($page - 1) * $limit;
+	$conn = new mysqli($GLOBALS["serverHost"], $GLOBALS["serverUserName"], $GLOBALS["serverPassword"], $GLOBALS["database"]);
+	$stmt = $conn->prepare("SELECT filename, alttext FROM vr20_photos WHERE privacy<=? AND deleted IS NULL LIMIT ?,?");
+	echo $conn->error;
+	$stmt->bind_param("iii", $privacy, $lower_bound, $limit);
+	$stmt->bind_result($filenameFromDb, $altFromDb);
+	$stmt->execute();
+	while ($stmt->fetch()) {
+		$html .= '<a href="' . $GLOBALS["normalPhotoDir"] . $filenameFromDb . '" target="_blank"><img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '"></a>' . "\n \t \t";
+	}
+	if ($html != "") {
+		$finalHTML = $html;
+	} else {
+		$finalHTML = "<p>Kahjuks pilte pole!</p>";
+	}
+	$stmt->close();
+	$conn->close();
+	return $finalHTML;
+}
 
 function readAllSemiPublicPictureThumbsPage($page, $limit)
 {
-	$privacy = 2;
+	$privacy = 3;
 	$skip = $page * $limit;
 	$finalHTML = "";
 	$html = "";
@@ -154,11 +155,11 @@ function readAllSemiPublicPictureThumbsPage($page, $limit)
 	$stmt->execute();
 	while ($stmt->fetch()) {
 		$html .= '<div class="galleryelement">' . "\n";
-		//$html .= '<a href="' .$GLOBALS["normalPhotoDir"] .$filenameFromDb .'" target="_blank"><img src="' .$GLOBALS["thumbPhotoDir"] .$filenameFromDb .'" alt="'.$altFromDb .'" class="thumb"></a>' ."\n \t \t";
+		$html .= '<a href="' . $GLOBALS["normalPhotoDir"] . $filenameFromDb . '" target="_blank"><img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '" class="thumb"></a>' . "\n \t \t";
 
-		$html .= '<img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '" class="thumb" data-fn="' . $filenameFromDb . '" data-id="' . $idFromDb . '">' . "\n \t \t";
+		//$html .= '<img src="' . $GLOBALS["thumbPhotoDir"] . $filenameFromDb . '" alt="' . $altFromDb . '" class="thumb" data-fn="' . $filenameFromDb . '" data-id="' . $idFromDb . '">' . "\n \t \t";
 		$html .= "<p>" . $firstnameFromBb . " " . $lastnameFromDb . "</p> \n \t \t";
-		$html .= "<p> Hinne: " . round($ratingFromDb, 2) . "</p> \n";
+		//$html .= "<p> Hinne: " . round($ratingFromDb, 2) . "</p> \n";
 		$html .= "</div> \n \t \t";
 	}
 	if ($html != "") {
