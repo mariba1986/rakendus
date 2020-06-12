@@ -4,6 +4,8 @@
 //session_start();
 //var_dump($_SESSION);
 require("classes/Session.class.php");
+require("../../../../configuration.php");
+require("fnc_gallery.php");
 SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
 //kas pole sisseloginud
@@ -18,12 +20,9 @@ if (isset($_GET["logout"])) {
 	header("Location: page.php");
 }
 
-require("../../../../configuration.php");
-
-require("fnc_gallery.php");
 
 $page = 1; //vaikimisi määran lehe numbriks 1 (see on vajalik näiteks siis, kui esimest korda galerii avatakse ja lehtedega pole veel tegeletud)
-$limit = 10; //mitu pilti ühele lehele soovin mahutada. Reaalelus oleks normaalne palju suurem number, näiteks 30 jne
+$limit = 5; //mitu pilti ühele lehele soovin mahutada. Reaalelus oleks normaalne palju suurem number, näiteks 30 jne
 $picCount = countPics(2); //küsin kõigi näidatavate piltide arvu, et teada, palju lehekülgi üldse olla võiks. Parameetriks piltide privaatsus. Funktsioon ise näitena allpool.
 //echo $picCount;
 //kui nüüd tuli ka lehe aadressis GET meetodil parameeter page, siis kontrollin, kas see on reaalne ja, kui pole, siis pane jõuga lehe numbriks 1 või viimase võimaliku lehe numbri
@@ -35,7 +34,8 @@ if (!isset($_GET["page"]) or $_GET["page"] < 1) {
 	$page = $_GET["page"];
 }
 
-$gallery = readAllSemiPublicPictureThumbsPage($page, $limit);
+$galleryHTML = readAllSemiPublicPictureThumbsPage($page, $limit);
+
 ?>
 <!DOCTYPE html>
 <html lang="et">
@@ -70,8 +70,9 @@ $gallery = readAllSemiPublicPictureThumbsPage($page, $limit);
 					<button id="storeRating">Salvesta hinnang!</button>
 					<br>
 					<p id="avgRating"></p>
+					<button id="DeletePic"> Kustuta</button>
+					<p id="DeleteConfirmation"></p>
 				</div>
-
 			</div>
 		</div>
 	</div>
@@ -95,7 +96,7 @@ $gallery = readAllSemiPublicPictureThumbsPage($page, $limit);
 	}
 	?>
 	<div class="gallery" id="gallery">
-		<?php echo $gallery; ?>
+		<?php echo $galleryHTML; ?>
 	</div>
 	<hr>
 </body>

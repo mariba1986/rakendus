@@ -16,6 +16,7 @@ if (isset($_GET["logout"])) {
 
 require("../../../../configuration.php");
 require("fnc_photoupload.php");
+require("fnc_main.php");
 require("classes/Photo.class.php");
 
 //pildi üleslaadimine osa
@@ -25,11 +26,11 @@ require("classes/Photo.class.php");
 
 //$originalPhotoDir = "../../uploadOriginalPhoto/";
 //$normalPhotoDir = "../../uploadNormalPhoto/";
-//$thumbPhotoDir = "../../uploadThumbnail";
 $error = null;
 $notice = null;
 $imageFileType = null;
 $fileUploadSizeLimit = 1048576;
+$allowedFileTypes = ["image/jpeg", "image/png"];
 $fileNamePrefix = "vr_";
 $fileName = null;
 $maxWidth = 600;
@@ -38,59 +39,31 @@ $thumbSize = 100;
 
 if (isset($_POST["photoSubmit"]) and !empty($_FILES["fileToUpload"]["tmp_name"])) {
 
-    //kas üldse on pilt?
-    $check = getimagesize($_FILES["fileToUpload"]["tmp_name"]);
-    if ($check !== false) {
-        //failitüübi väljaselgitamine ja sobivuse kontroll
-        if ($check["mime"] == "image/jpeg") {
-            $imageFileType = "jpg";
-        } elseif ($check["mime"] == "image/png") {
-            $imageFileType = "png";
-        } else {
-            $error = "Ainult jpg ja png pildid on lubatud! ";
-        }
-    } else {
-        $error = "Valitud fail ei ole pilt! ";
-    }
+    $photoUp = new Photo($_FILES["fileToUpload"], $fileUploadSizeLimit, $allowedFileTypes);
 
-    //ega pole liiga suur
-    if ($_FILES["fileToUpload"]["size"] > $fileUploadSizeLimit) {
-        $error .= "Valitud fail on liiga suur! ";
-    }
+    if ($photoUp->error == null) {
 
-    //loome oma nime failile
-    $timestamp = microtime(1) * 10000;
-    $fileName = $fileNamePrefix . $timestamp . "." . $imageFileType;
+        $photoUp->createFileName($fileNamePrefix);
 
-    //$originalTarget = $originalPhotoDir .$_FILES["fileToUpload"]["name"];
-    $originalTarget = $originalPhotoDir . $fileName;
-
-    //äkki on fail olemas?
-    if (file_exists($originalTarget)) {
-        $error .= "Selline fail on juba olemas!";
-    }
-
-    //kui vigu pole
-    if ($error == null) {
-
-        $photoUp = new Photo($_FILES["fileToUpload"], $imageFileType);
-
-        //teen pildi väiksemaks
-        /* if($imageFileType == "jpg"){
-				$myTempImage = imagecreatefromjpeg($_FILES["fileToUpload"]["tmp_name"]);
-			}
-			if($imageFileType == "png"){
-				$myTempImage = imagecreatefrompng($_FILES["fileToUpload"]["tmp_name"]);
-			} */
-
-        //$myNewImage = resizePhoto($myTempImage, $maxWidth, $maxHeight);
         $photoUp->resizePhoto($maxWidth, $maxHeight);
 
         //lisan vesimärgi
         $photoUp->addWatermark("vr_watermark.png", 3, 10);
 
-        //$result = saveImgToFile($photoUp->myNewImage, $normalPhotoDir . $fileName, $imageFileType);
-        $result = $photoUp->saveImgToFile($normalPhotoDir . $fileName);
+        //loen EXIF
+        $photoUp->readExif();
+        if ($photoUp->photoDate != null) {
+            $size = 14;
+            $y = 20;
+            $textToImage = "Pildistatud " . $photoUp->photoDate;
+            $photoUp->addText($size, $y, $textToImage);
+        } else {
+            echo "Pildistamiskuupäev pole teada!";
+        }
+
+        //$result = saveImgToFile($photoUp->myNewImage, $normalPhotoDir .$fileName, $imageFileType);
+        //$notice .= $myPic->savePicFile($pic_upload_dir_w600 .$myPic->fileName);
+        $result = $photoUp->saveImgToFile($normalPhotoDir . $photoUp->fileName);
         if ($result == 1) {
             $notice = "Vähendatud pilt laeti üles! ";
         } else {
@@ -98,38 +71,36 @@ if (isset($_POST["photoSubmit"]) and !empty($_FILES["fileToUpload"]["tmp_name"])
         }
 
         $photoUp->resizePhoto($thumbSize, $thumbSize);
-
-        //lõpetame vähendatud pildiga ja teeme thumbnail'i
-        /* imageDestroy($myNewImage);
-			$myNewImage = resizePhoto($myTempImage, $thumbSize, $thumbSize); */
-        //$result = saveImgToFile($photoUp->myNewImage, $thumbPhotoDir . $fileName, $imageFileType);
-        $result = $photoUp->saveImgToFile($thumbPhotoDir . $fileName);
+        $result = $photoUp->saveImgToFile($thumbPhotoDir . $photoUp->fileName);
         if ($result == 1) {
-            $notice = "Pisipilt laeti üles! ";
+            $notice .= "Pisipilt laeti üles! ";
         } else {
             $error .= " Pisipildi salvestamisel tekkis viga!";
         }
 
-        /* imageDestroy($myNewImage);
-			imagedestroy($myTempImage); */
-        unset($photoUp);
-
-        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $originalTarget)) {
-            $notice .= "Originaalpilt laeti üles! ";
-        } else {
-            $error .= " Pildi üleslaadimisel tekkis viga!";
-        }
-
         //kui kõik hästi, salvestame info andmebaasi!!!
         if ($error == null) {
-            $result = addPhotoData($fileName, $_POST["altText"], $_POST["privacy"], $_FILES["fileToUpload"]["name"]);
+            $result = addPhotoData($photoUp->fileName, test_input($_POST["altText"]), $_POST["privacy"], $_FILES["fileToUpload"]["name"]);
             if ($result == 1) {
                 $notice .= "Pildi andmed lisati andmebaasi!";
             } else {
                 $error .= " Pildi andmete lisamisel andmebaasi tekkis tehniline tõrge: " . $result;
             }
         }
-    } //kui vigu pole
+    } else {
+        //1 - pole pildifail, 2 - liiga suur, pole lubatud tüüp
+        if ($photoUp->error == 1) {
+            $notice = "Üleslaadimiseks valitud fail pole pilt!";
+        }
+        if ($photoUp->error == 2) {
+            $notice = "Üleslaadimiseks valitud fail on liiga suure failimahuga!";
+        }
+        if ($photoUp->error == 3) {
+            $notice = "Üleslaadimiseks valitud fail pole lubatud tüüpi (lubatakse vaid jpg ja png)!";
+        }
+    }
+
+    unset($photoUp);
 }
 ?>
 <!DOCTYPE html>

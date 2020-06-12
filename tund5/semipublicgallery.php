@@ -4,6 +4,8 @@
 //session_start();
 //var_dump($_SESSION);
 require("classes/Session.class.php");
+require("../../../../configuration.php");
+require("fnc_gallery.php");
 SessionManager::sessionStart("vr20", 0, "/~maris.riba/", "tigu.hk.tlu.ee");
 
 //kas pole sisseloginud
@@ -18,10 +20,23 @@ if (isset($_GET["logout"])) {
     header("Location: page.php");
 }
 
-require("../../../../configuration.php");
-require("fnc_gallery.php");
+$page = 1; //vaikimisi määran lehe numbriks 1 (see on vajalik näiteks siis, kui esimest korda galerii avatakse ja lehtedega pole veel tegeletud)
+$limit = 10; //mitu pilti ühele lehele soovin mahutada. Reaalelus oleks normaalne palju suurem number, näiteks 30 jne
+$picCount = countPics(2); //küsin kõigi näidatavate piltide arvu, et teada, palju lehekülgi üldse olla võiks. Parameetriks piltide privaatsus. Funktsioon ise näitena allpool.
+//echo $picCount;
+//kui nüüd tuli ka lehe aadressis GET meetodil parameeter page, siis kontrollin, kas see on reaalne ja, kui pole, siis pane jõuga lehe numbriks 1 või viimase võimaliku lehe numbri
+if (!isset($_GET["page"]) or $_GET["page"] < 1) {
+    $page = 1;
+} elseif (round($_GET["page"] - 1) * $limit >= $picCount) {
+    $page = ceil($picCount / $limit);
+} else {
+    $page = $_GET["page"];
+}
 
-$privateThumbnails = readAllSemiPublicPictureThumbs();
+//$gallery = readAllSemiPublicPictureThumbsPage($page, $limit);
+//$privateThumbnails = readAllSemiPublicPictureThumbs();
+$privateThumbnails = readAllSemiPublicPictureThumbsPage($page, $limit);
+
 ?>
 <!DOCTYPE html>
 <html lang="et">
@@ -29,6 +44,7 @@ $privateThumbnails = readAllSemiPublicPictureThumbs();
 <head>
     <meta charset="utf-8">
     <title>Veebirakendused ja nende loomine 2020</title>
+    <link rel="stylesheet" type="text/css" href="style/gallery.css">
 </head>
 
 <body>
@@ -37,8 +53,21 @@ $privateThumbnails = readAllSemiPublicPictureThumbs();
     <p><?php echo $_SESSION["userFirstName"] . " " . $_SESSION["userLastName"] . "."; ?> Logi <a href="?logout=1">välja</a>!</p>
     <p>Tagasi <a href="home.php">avalehele</a>!</p>
     <hr>
-    <div>
-        <?php echo $privateThumbnails;; ?>
+
+    <?php
+    if ($page > 1) {
+        echo '<a href="?page=' . ($page - 1) . '">Eelmine leht</a> | ';
+    } else {
+        echo "<span>Eelmine leht</span> | ";
+    }
+    if (($page + 1) * $limit <= $picCount) {
+        echo '<a href="?page=' . ($page + 1) . '">Järgmine leht</a>';
+    } else {
+        echo "<span> Järgmine leht</span>";
+    }
+    ?>
+    <div class="gallery" id="gallery">
+        <?php echo $privateThumbnails; ?>
     </div>
     <hr>
 </body>

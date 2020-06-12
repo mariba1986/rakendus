@@ -3,15 +3,23 @@ class Photo
 {
     private $picToUpload;
     private $imageFileType;
+    private $fileSizeLimit;
+    private $allowedFileTypes;
+    private $timeStamp;
+    public $fileName;
+    public $error;
+    public $photoDate;
     private $myTempImage;
-    public $myNewImage; //tegelikult, kui klass hakkab pikslikogumit faili salvestama, siis see tagasi private!!!
+    private $myNewImage;
 
-    function __construct($picToUpload, $imageFileType)
+    function __construct($picToUpload, $fileSizeLimit, $allowedFileTypes)
     {
         $this->picToUpload = $picToUpload;
-        $this->imageFileType = $imageFileType;
-        //hiljem tuleks kõigepealt selgitada, kas on sobiv fail üleslaadimiseks ja siis ka imageFileType kindlaks teha klssi sees
-        $this->myTempImage = $this->createImageFromFile($this->picToUpload["tmp_name"], $this->imageFileType);
+        $this->error = null; //1 - pole pildifail, 2 - liiga suur, pole lubatud tüüp
+        $this->fileSizeLimit = $fileSizeLimit;
+        $this->allowedFileTypes = $allowedFileTypes;
+        $this->timeStamp = microtime(1) * 10000;
+        $this->checkImageForUpload();
     }
 
     function __destruct()
@@ -24,6 +32,46 @@ class Photo
         }
     }
 
+    private function checkImageForUpload()
+    {
+        //kas on pilt
+        $check = getimagesize($this->picToUpload["tmp_name"]);
+        if ($check == false) {
+            $this->error = 1;
+        }
+
+        //kas sobiv suurus
+        if ($this->error == null and $this->picToUpload["size"] > $this->fileSizeLimit) {
+            $this->error = 2;
+        }
+
+        if ($this->error == null) {
+            //failitüüp
+            if ($check["mime"] == "image/jpeg") {
+                $this->imageFileType = "jpg";
+            }
+            if ($check["mime"] == "image/png") {
+                $this->imageFileType = "png";
+            }
+            if ($check["mime"] == "image/gif") {
+                $this->imageFileType = "gif";
+            }
+
+            //kas lubatud tüüp
+
+            //if($this->imageFileType != "jpg" and $this->imageFileType != "png" and $this->imageFileType != "gif" ) {
+            if (!in_array($check["mime"], $this->allowedFileTypes)) {
+                $this->error = 3;
+            }
+        }
+
+
+        //kui kõik sobib, teeme vajaliku pildiobjekti
+        if ($this->error == null) {
+            $this->myTempImage = $this->createImageFromFile($this->picToUpload["tmp_name"], $this->imageFileType);
+        }
+    } //checkImageForUpload lõpp
+
     private function createImageFromFile($imageFile, $fileType)
     {
         if ($fileType == "jpg") {
@@ -33,6 +81,11 @@ class Photo
             $image = imagecreatefrompng($imageFile);
         }
         return $image;
+    }
+
+    public function createFileName($prefix)
+    {
+        $this->fileName = $prefix . $this->timeStamp . "." . $this->imageFileType;
     }
 
     public function resizePhoto($w, $h, $keepOrigProportion = true)
@@ -79,27 +132,6 @@ class Photo
         imagecopyresampled($this->myNewImage, $this->myTempImage, 0, 0, $cutX, $cutY, $newW, $newH, $cutSizeW, $cutSizeH);
     }
 
-    public function saveImgToFile($target)
-    {
-        $notice = null;
-        if ($this->imageFileType == "jpg") {
-            if (imagejpeg($this->myNewImage, $target, 90)) {
-                $notice = 1;
-            } else {
-                $notice = 0;
-            }
-        }
-        if ($this->imageFileType == "png") {
-            if (imagepng($this->myNewImage, $target, 6)) {
-                $notice = 1;
-            } else {
-                $notice = 0;
-            }
-        }
-        imagedestroy($this->myNewImage);
-        return $notice;
-    }
-
     public function addWatermark($wmFile, $wmLocation, $fromEdge)
     {
         $wmFileType = strtolower(pathinfo($wmFile, PATHINFO_EXTENSION));
@@ -126,4 +158,62 @@ class Photo
         imagecopy($this->myNewImage, $waterMark, $waterMarkX, $waterMarkY, 0, 0, $waterMarkW, $waterMarkH);
     } //addWatermark lõppeb
 
+    public function readExif()
+    {
+        // kõige ees on "@" märk, et vältida hoiatust
+        @$exif = exif_read_data($this->picToUpload["tmp_name"], "ANY_TAG", 0, true);
+        //var_dump($exif);
+        //echo $exif["DateTimeOriginal"];
+        if (!empty($exif["DateTimeOriginal"])) {
+            $this->photoDate = $exif["DateTimeOriginal"];
+        } else {
+            $this->photoDate = NULL;
+        }
+    }
+
+    public function addText($size, $y, $textToImage)
+    {
+        $textColor = imagecolorallocatealpha($this->myNewImage, 255, 255, 255, 60); //valge, 60% alpha
+        //Kirjutatakse tekst pildile, arameetriteks: pildiobjekt, teksti suurus (näiteks 14), , nurk (teksti saab kaldu panna), x-koordinaat, y-koordinaat, teksti värv (eelnevalt defineeritud), TTF-fondi url, kirjutatav tekst
+        imagettftext($this->myNewImage, $size, 0, 10, $y, $textColor, "./ARIALBD.TTF", $textToImage);
+    }
+
+    public function saveImgToFile($target)
+    {
+        $notice = null;
+        if ($this->imageFileType == "jpg") {
+            if (imagejpeg($this->myNewImage, $target, 90)) {
+                $notice = 1;
+            } else {
+                $notice = 0;
+            }
+        }
+        if ($this->imageFileType == "png") {
+            if (imagepng($this->myNewImage, $target, 6)) {
+                $notice = 1;
+            } else {
+                $notice = 0;
+            }
+        }
+        if ($this->imageFileType == "gif") {
+            if (imagepng($this->myNewImage, $target)) {
+                $notice = 1;
+            } else {
+                $notice = 0;
+            }
+        }
+        imagedestroy($this->myNewImage);
+        return $notice;
+    }
+
+    public function saveOriginal($target)
+    {
+        $notice = null;
+        if (move_uploaded_file($this->picToUpload["tmp_name"], $target)) {
+            $notice = "Originaalfaili salvestamine õnnestus!";
+        } else {
+            $notice = "Originaalfaili salvestamine ei õnnestunud!";
+        }
+        return $notice;
+    }
 }//klass lõppeb

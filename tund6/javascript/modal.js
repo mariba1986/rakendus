@@ -57,8 +57,21 @@ function storeRating() {
 	}
 }
 
+function deletePicture() {
+	//AJAX
+	let webRequest = new XMLHttpRequest();
+	webRequest.onreadystatechange = function () {
+		if (this.readyState == 4 && this.status == 200) {
+			//mis teha javascriptis, kui AJAX on edukas
+			document.getElementById("DeleteConfirmation").innerHTML = "Foto kustutatud" + this.responseText;
+		}
+	};
+	//    storePhotoRating.php?rating=5&photoId=25
+	webRequest.open("GET", "deletePicture.php?photoid=" + photoId, true);
+	webRequest.send();
 
-
+	//AJAX lõppeb
+}
 
 
 
